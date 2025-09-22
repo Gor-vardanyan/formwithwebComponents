@@ -1,10 +1,23 @@
+import { useState } from 'react'
 import './App.css'
 
 function App() {
+  const [step, setStep] = useState(0);
+
+  const renderBySteps = () => {
+    switch (step) {
+      case 1: <wc-owner/>
+        return
+      case 2: <wc-overview/>
+        return
+      default:
+        return <wc-acomodation/>
+    }
+  }
   return (
-    <h1 className="text-3xl font-bold underline">
-    Hello world!
-  </h1>
+    <div>
+      {renderBySteps()}
+    </div>
   )
 }
 
