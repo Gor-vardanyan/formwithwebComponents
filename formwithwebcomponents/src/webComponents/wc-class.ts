@@ -6,7 +6,7 @@ type ComponentName = 'acomodation' | 'owner' | 'overview';
 export class WcClass extends HTMLElement {
     name: ComponentName = 'acomodation';
     inner = this.attachShadow({ mode: 'open' });
-    formData: Partial<Acomodation> = {}
+    formData: Partial<Acomodation | Owner | Acomodation & Owner> = {}
     constructor(wcName: ComponentName) {
         super();
         this.name = wcName;
