@@ -1,21 +1,64 @@
 import { useState } from 'react'
 import './App.css'
 
+export type Acomodation = {
+  name: string;
+  address: string;
+  type: 'apartment' | 'house' | 'villa';
+  description?: string;
+  photo?: File[];
+}
+
+export type Owner = {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 function App() {
   const [step, setStep] = useState(0);
+  const [formData, setFormData] = useState<{
+    acomodation?: Acomodation,
+    owner?: Owner
+  }>({});
+
+  const handleStepChange = (e: CustomEvent<{
+    direction: string;
+    acomodation?: Acomodation,
+    owner?: Owner
+  }>) => {
+    const acomodation = e.detail.acomodation
+    const owner = e.detail.owner
+    if (e.detail.direction === 'next') {
+      setStep(step + 1);
+    } else {
+      setStep(step - 1);
+    }
+    if (acomodation !== undefined) {
+      setFormData({ ...formData, acomodation });
+    } else if (owner !== undefined) {
+      setFormData({ ...formData, owner });
+    }
+  };
 
   const renderBySteps = () => {
     switch (step) {
-      case 1: <wc-owner/>
-        return
-      case 2: <wc-overview/>
-        return
+      case 1:
+        return <wc-owner
+          data={formData.owner ?? {}}
+          onChange={(e: any) => handleStepChange(e.nativeEvent as CustomEvent)} />
+      case 2:
+        return <wc-overview />
       default:
-        return <wc-acomodation/>
+        return <wc-acomodation
+          data={formData.acomodation ?? {}}
+          onChange={(e: any) => handleStepChange(e.nativeEvent as CustomEvent)}
+        />
     }
   }
   return (
     <div>
+      Form & Web Components
       {renderBySteps()}
     </div>
   )

@@ -1,11 +1,29 @@
 import { DetailedHTMLProps, HTMLAttributes } from 'react';
 
 declare module 'react/jsx-runtime' {
-  namespace JSX {
-    interface IntrinsicElements {
-      'wc-acomodation': DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
-      'wc-owner': DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
-      'wc-overview': DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
+    namespace JSX {
+        interface IntrinsicElements {
+            'wc-acomodation': React.DetailedHTMLProps<
+                React.HTMLAttributes<HTMLElement>,
+                HTMLElement
+            > & {
+                data?: Acomodation | {};
+                onChange?: (e: any) => void;
+            };
+            'wc-owner': React.DetailedHTMLProps<
+                React.HTMLAttributes<HTMLElement>,
+                HTMLElement
+            > & {
+                data?: Acomodation | {};
+                onChange?: (e: any) => void;
+            };
+            'wc-overview': React.DetailedHTMLProps<
+                React.HTMLAttributes<HTMLElement>,
+                HTMLElement
+            > & {
+                data?: Acomodation | {};
+                onSubmit?: (e: any) => void;
+            };
+        }
     }
-  }
 }
