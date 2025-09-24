@@ -45,13 +45,17 @@ function App() {
     switch (step) {
       case 1:
         return <wc-owner
-          data={formData.owner ?? {}}
-          onChange={(e: any) => handleStepChange(e.nativeEvent as CustomEvent)} />
-      case 2:
-        return <wc-overview />
+          data={JSON.stringify(formData.owner)}
+          onChange={(e: any) => handleStepChange(e.nativeEvent as CustomEvent)}
+        />
+      case 2: {
+        return <wc-overview
+          data={JSON.stringify(formData)}
+        />
+      }
       default:
         return <wc-acomodation
-          data={formData.acomodation ?? {}}
+          data={JSON.stringify(formData.acomodation)}
           onChange={(e: any) => handleStepChange(e.nativeEvent as CustomEvent)}
         />
     }

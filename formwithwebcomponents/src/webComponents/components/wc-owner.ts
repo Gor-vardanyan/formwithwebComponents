@@ -1,8 +1,8 @@
-import type { Owner } from '../../App';
+import { WcClass } from '../wc-class';
 import wcStyles from '../wc-styles.css?inline'
 
 const markup = /*html*/ `
-<div style="width:500px" class="col gap">
+<form style="width:500px" class="col gap">
   <h2>Owner</h2>
     <div class="col">
         <label for="name">Name</label>
@@ -28,27 +28,33 @@ const markup = /*html*/ `
         <p class="error" data-error="email"></p>
     </div>
     <div class="col">
-        <label for="phone_number">phone number</label>
+        <label for="phone">phone number</label>
         <input 
             required
             title="phone number"
             type="text"
-            name="phone_number"
+            name="phone"
             placeholder="phone number"
         />
-        <p class="error" data-error="phone_number"></p>
+        <p class="error" data-error="phone"></p>
     </div>
     <div class="row gap">
         <button id="prev">Previous</button>
-        <button id="next">Next</button>
+        <button 
+            id="next"
+            style="background-color:grey"
+            disabled=true
+        >
+        Next
+        </button>
     </div>
-</div>
-`;
-class WcOwner extends HTMLElement {
-    inner = this.attachShadow({ mode: 'closed' })
-    formData: Partial<Owner> ={} 
+</form>`;
+
+class WcOwner extends WcClass {
+    static observedAttributes = ["data"];
+    names = ['name', 'email', 'phone']
     constructor() {
-        super()
+        super('owner')
     }
 
     connectedCallback() {
@@ -56,47 +62,29 @@ class WcOwner extends HTMLElement {
         style.textContent = wcStyles;
         this.inner.appendChild(style);
         this.inner.innerHTML += markup;
-        
-        const inputName = this.inner.querySelector<HTMLInputElement>('input[name="name"]');
-        inputName?.addEventListener('input', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.updateForm({ name: target.value });
-        });
 
-        const inputAddress = this.inner.querySelector<HTMLInputElement>('input[name="address"]');
-        inputAddress?.addEventListener('input', (e) => {
-            const target = e.target as HTMLInputElement;
-            this.updateForm({ address: target.value });
-        });
+        this.setInputBlurListener();
+        
+        this.names.forEach((name) => {
+            const inputName = this.inner.querySelector<HTMLInputElement>(`input[name="${name}"]`);
+            inputName?.addEventListener('input', (e) => {
+                const target = e.target as HTMLInputElement;
+                this.updateForm({ name: target.value });
+            });
+        })
 
         const prevButton = this.inner.querySelector<HTMLButtonElement>('#prev');
         prevButton?.addEventListener('click', (e) => {
             e.preventDefault();
-            this.emitStepChange('previous');
+            this.emitStepChange('previous', this.name);
         });
 
         const nextButton = this.inner.querySelector<HTMLButtonElement>('#next');
         nextButton?.addEventListener('click', (e) => {
             e.preventDefault();
-            this.emitStepChange('next');
+            this.emitStepChange('next', this.name);
         });
     }
-
-    emitStepChange(direction: 'next' | 'previous') {
-        const event = new CustomEvent('change', {
-            detail: { direction, owner: this.formData },
-            bubbles: true,
-            composed: true
-        });
-        this.dispatchEvent(event);
-    };
-
-    updateForm(newValue: Record<string, string>) {
-        this.formData = {
-            ...this.formData,
-            ...newValue
-        }
-    };
 }
 
 window.customElements.define('wc-owner', WcOwner)
