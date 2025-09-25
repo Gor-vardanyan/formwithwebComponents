@@ -1,14 +1,11 @@
 import type { Acomodation } from "../../App";
 import { WcClass } from "../wc-class";
-import wcStyles from '../wc-styles.css?inline'
-//TODO: add 2 images debugg
-//TODO: style tailwind
 //TODO: UX
 
 const markup = /*html*/ `
 <form style="width:500px" class="col gap">
   <h2>Accommodation</h2>
-    <div class="col">
+    <div class="col bg-amber-100">
         <label for="name">Name</label>
         <input 
             required 
@@ -56,16 +53,18 @@ const markup = /*html*/ `
     <div class="col">
         <label>Photos</label>
         <div class="col gap">
-        <div class="photos">
-          <img id="photo_preview_0" style="display:none; width:80px; height:80px; object-fit:cover;" />
-          <button id="remove_photo_0" style="display:none;">Remove</button>
-          <img id="photo_preview_1" style="display:none; width:80px; height:80px; object-fit:cover;" />
-          <button id="remove_photo_1" style="display:none;">Remove</button>
+            <div>
+                <div id="photo_1"></div>
+                <button id="remove_1" style="display:none">remove</button>
+            </div>
+            <div>
+                <div id="photo_2"></div>
+                <button id="remove_2" style="display:none">remove</button>
+            </div>
+            <button id="add_photo">Add photo</button>
+            <input id="file" type="file" style="display:none">
         </div>
-        <button id="add_photo">Add photo</button>
-        <input type="file" id="photo_input" accept="image/*" multiple style="display:none" />
-      </div>
-      <p class="error" data-error="photo"></p>      
+        <p class="error" data-error="photo"></p>
     </div>
   <div class="row gap">
     <button 
@@ -80,30 +79,119 @@ const markup = /*html*/ `
 
 export class WcAcomodation extends WcClass {
     static observedAttributes = ["data"];
-    names = ['name', 'address', 'description', 'type'];
+    names = ['name', 'address', 'description'];
     constructor() {
         super('acomodation');
     };
 
     //react 19 already clears event listeneres when dismounting the component
     connectedCallback() {
-        const style = document.createElement('style');
-        style.textContent = wcStyles;
-        this.inner.appendChild(style);
         this.inner.innerHTML += markup;
-
         this.setInputBlurListener();
-
         this.names.forEach((name) => {
             const inputName = this.inner.querySelector<HTMLInputElement>(`input[name="${name}"]`);
             inputName?.addEventListener('input', (e) => {
                 const target = e.target as HTMLInputElement;
-                this.updateForm({ name: target.value });
+                this.updateForm({ [name]: target.value });
             });
         })
 
-        const nextButton = this.inner.querySelector<HTMLButtonElement>('#next');
-        nextButton?.addEventListener('click', (e) => {
+        const type = this.inner.querySelector<HTMLInputElement>('select[name="type"]') as HTMLInputElement;
+        const uploadPhotoInput = this.inner.querySelector<HTMLInputElement>('#file') as HTMLInputElement;
+
+        const photo1 = this.inner.querySelector<HTMLDivElement>('#photo_1') as HTMLDivElement;
+        const photo2 = this.inner.querySelector<HTMLDivElement>('#photo_2') as HTMLDivElement;
+
+        const nextButton = this.inner.querySelector<HTMLButtonElement>('#next') as HTMLButtonElement;
+        const addPhoto = this.inner.querySelector<HTMLButtonElement>('#add_photo') as HTMLButtonElement;
+        const removePhoto1 = this.inner.querySelector<HTMLButtonElement>('#remove_1') as HTMLButtonElement;
+        const removePhoto2 = this.inner.querySelector<HTMLButtonElement>('#remove_2') as HTMLButtonElement;
+        
+        const renderPhotos = () => {
+            const data = this.formData as Acomodation;
+            const photos = data.photos ?? [];
+
+            if (photo1) photo1.innerHTML = "";
+            if (photo2) photo2.innerHTML = "";
+
+            if (photos[0]) {
+                const img = document.createElement("img");
+                img.src = URL.createObjectURL(photos[0]);
+                img.width = 100;
+                img.height = 100;
+                img.style.objectFit = "cover";
+                photo1.appendChild(img);
+                removePhoto1.style.display = "inline-block";
+            } else {
+                removePhoto1.style.display = "none";
+            }
+
+            if (photos[1]) {
+                const img = document.createElement("img");
+                img.src = URL.createObjectURL(photos[1]);
+                img.width = 100;
+                img.height = 100;
+                img.style.objectFit = "cover";
+                photo2.appendChild(img);
+                removePhoto2.style.display = "inline-block";
+            } else {
+                removePhoto2.style.display = "none";
+            }
+            this.toggleButtonDisable(addPhoto, !(photos.length >= 2));
+        };
+
+        type.addEventListener('change', (e) => {
+            const target = e.target as HTMLInputElement;
+            this.updateForm({ type: target.value });
+            type.blur();
+        });
+
+        uploadPhotoInput.addEventListener("change", (e) => {
+            const data = this.formData as Acomodation;
+            e.preventDefault();
+            const target = e.target as HTMLInputElement;
+            if (target.files) {
+                const newFiles = Array.from(target.files);
+                const updated = [
+                    ...(data.photos ?? []),
+                    ...newFiles
+                ].slice(0, 2);
+
+                this.updateForm({ photos: updated });
+                renderPhotos();
+                target.value = "";
+            }
+        });
+
+        addPhoto.addEventListener('click', (e) => {
+            e.preventDefault();
+            const data = this.formData as Acomodation;
+            if ((data.photos?.length ?? 0) < 2) {
+                uploadPhotoInput.click();
+            }
+        });
+
+        removePhoto1.addEventListener('click', (e) => {
+            e.preventDefault();
+            const data = this.formData as Acomodation;
+            if (data.photos) {
+                const updated = data.photos.slice(1);
+                this.updateForm({ photos: updated });
+                renderPhotos();
+            }
+        });
+
+        removePhoto2.addEventListener('click', (e) => {
+            e.preventDefault();
+            const data = this.formData as Acomodation;
+            if (data.photos) {
+                const updated = [data.photos[0]];
+                this.updateForm({ photos: updated });
+                renderPhotos();
+            }
+        });
+
+        nextButton.addEventListener('click', (e) => {
             e.preventDefault();
             this.validateForm();
             if (this.isValid) {
@@ -111,66 +199,7 @@ export class WcAcomodation extends WcClass {
             }
         });
 
-        const addPhotoBtn = this.inner.querySelector<HTMLButtonElement>("#add_photo");
-        const photoInput = this.inner.querySelector<HTMLInputElement>("#photo_input");
-        const photoPreviews = [
-            this.inner.querySelector<HTMLImageElement>("#photo_preview_0"),
-            this.inner.querySelector<HTMLImageElement>("#photo_preview_1"),
-        ];
-        const removeBtns = [
-            this.inner.querySelector<HTMLButtonElement>("#remove_photo_0"),
-            this.inner.querySelector<HTMLButtonElement>("#remove_photo_1"),
-        ];
-
-        const renderPhotos = (files: File[]) => {
-            files.forEach((file, i) => {
-                if (photoPreviews[i] && removeBtns[i]) {
-                    photoPreviews[i]!.src = URL.createObjectURL(file);
-                    photoPreviews[i]!.style.display = "block";
-                    removeBtns[i]!.style.display = "inline-block";
-                }
-            });
-            for (let i = files.length; i < 2; i++) {
-                if (photoPreviews[i] && removeBtns[i]) {
-                    photoPreviews[i]!.style.display = "none";
-                    removeBtns[i]!.style.display = "none";
-                    photoPreviews[i]!.src = "";
-                }
-            }
-            if (addPhotoBtn) {
-                addPhotoBtn.disabled = files.length >= 2;
-            }
-        };
-
-        const photo = (this.formData as Acomodation).photo
-        addPhotoBtn?.addEventListener("click", (e) => {
-            e.preventDefault();
-            if ((photo?.length ?? 0) >= 2) return;
-            photoInput?.click();
-        });
-
-        photoInput?.addEventListener("change", (e) => {
-            const target = e.target as HTMLInputElement;
-            if (target.files) {
-                const newFiles = Array.from(target.files);
-                const currentPhotos = photo ?? [];
-                const merged = [...currentPhotos, ...newFiles].slice(0, 2);
-                this.updateForm({ photo: merged });
-                renderPhotos(merged);
-                target.value = "";
-            }
-        });
-
-        removeBtns.forEach((btn, i) => {
-            btn?.addEventListener("click", (e) => {
-                e.preventDefault();
-                const updated = [...(photo ?? [])];
-                updated.splice(i, 1);
-                this.updateForm({ photo: updated });
-                renderPhotos(updated);
-            });
-        });
-
+        renderPhotos();
     };
 }
 

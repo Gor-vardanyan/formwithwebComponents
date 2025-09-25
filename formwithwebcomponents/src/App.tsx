@@ -6,7 +6,7 @@ export type Acomodation = {
   address: string;
   type: 'apartment' | 'house' | 'villa';
   description?: string;
-  photo?: File[];
+  photos?: File[];
 }
 
 export type Owner = {
@@ -61,7 +61,7 @@ function App() {
     }
   }
   return (
-    <div>
+    <div className='bg-amber-100 rounded-2xl'>
       Form & Web Components
       {renderBySteps()}
     </div>

@@ -1,5 +1,4 @@
 import { WcClass } from '../wc-class';
-import wcStyles from '../wc-styles.css?inline'
 
 const markup = /*html*/ `
 <form style="width:500px" class="col gap">
@@ -58,13 +57,10 @@ class WcOwner extends WcClass {
     }
 
     connectedCallback() {
-        const style = document.createElement('style');
-        style.textContent = wcStyles;
-        this.inner.appendChild(style);
         this.inner.innerHTML += markup;
 
         this.setInputBlurListener();
-        
+
         this.names.forEach((name) => {
             const inputName = this.inner.querySelector<HTMLInputElement>(`input[name="${name}"]`);
             inputName?.addEventListener('input', (e) => {

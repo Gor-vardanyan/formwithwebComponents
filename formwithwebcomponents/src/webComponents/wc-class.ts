@@ -1,4 +1,5 @@
 import type { Acomodation, Owner } from "../App";
+import tailwindcss from '../App.css?inline'
 
 export type Overview = { 'acomodation': Acomodation, 'owner': Owner };
 type ComponentName = 'acomodation' | 'owner' | 'overview';
@@ -26,9 +27,24 @@ export class WcClass extends HTMLElement {
      * Creates an instance of the Web Component.
      * @param wcName - initialize with the name ("accommodation" | "owner" | "overview")
      */
+
+    connectedCallback() {
+
+    }
+
     constructor(wcName: ComponentName) {
         super();
         this.name = wcName;
+        const inner = this.inner
+        this.connectedCallback = new Proxy(this.connectedCallback, {
+            apply(target, thisArg, args) {
+                const style = document.createElement('style');
+                style.textContent += tailwindcss;
+                inner.appendChild(style);
+                const result = Reflect.apply(target, thisArg, args);
+                return result;
+            },
+        });
     };
 
     validateInput(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
@@ -65,18 +81,22 @@ export class WcClass extends HTMLElement {
         });
     }
 
+    toggleButtonDisable(button: HTMLButtonElement, allow: boolean) {
+        if (allow) {
+            button.disabled = false;
+            button.style = 'background-color: blue'
+        } else {
+            button.disabled = true;
+            button.style = 'background-color: gray'
+        }
+    }
+
     validateForm() {
         const form = this.inner.querySelector<HTMLFormElement>('form')
         if (form) {
             this.isValid = form.checkValidity();
             const button = this.inner.querySelector<HTMLButtonElement>('#next') as HTMLButtonElement
-            if (this.isValid) {
-                button.disabled = false;
-                button.style = 'background-color: blue'
-            } else {
-                button.disabled = true;
-                button.style = 'background-color: gray'
-            }
+            this.toggleButtonDisable(button, this.isValid)
         }
     }
 
@@ -85,7 +105,7 @@ export class WcClass extends HTMLElement {
      * 
      * @param newValue - A record of key/value pairs to update in `formData`.
      */
-    updateForm(newValue: Record<string, string | File[]>) {
+    updateForm(newValue: Record<string, string | (File | FileList)[]>) {
         this.formData = {
             ...this.formData,
             ...newValue
