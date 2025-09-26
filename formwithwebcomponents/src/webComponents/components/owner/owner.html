@@ -1,0 +1,37 @@
+<div class="container mx-auto flex items-center justify-center">
+    <div class="relative">
+        <form style="width:500px" class="bg-white rounded-2xl p-6 shadow-2xl border border-gray-100">
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-light text-gray-900 tracking-tight">Owner</h2>
+                <p class="text-sm text-gray-500 mt-2">Please provide the following information</p>
+            </div>
+            
+            <div class="flex flex-col gap-0.5 mb-5">
+                <label for="name" class="text-sm font-bold text-gray-700">Name <span class="text-red-500">*</span></label>
+                <input required title="Name must be 4-128 characters and contain only letters" type="text" name="name" pattern="^[A-Za-z\s]{4,128}$" placeholder="Name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400">
+                <p class="error text-sm text-red-600" data-error="name"></p>
+            </div>
+            
+            <div class="flex flex-col gap-0.5 mb-5">
+                <label for="email" class="text-sm font-bold text-gray-700">Email <span class="text-red-500">*</span></label>
+                <input required title="example email@gmail.com" type="text" name="email" placeholder="Email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400">
+                <p class="error text-sm text-red-600" data-error="email"></p>
+            </div>
+            
+            <div class="flex flex-col gap-0.5 mb-5">
+                <label for="phone" class="text-sm font-bold text-gray-700">Phone Number <span class="text-red-500">*</span></label>
+                <input required title="phone number" type="text" name="phone" placeholder="Phone number" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400">
+                <p class="error text-sm text-red-600" data-error="phone"></p>
+            </div>
+            
+            <div class="flex gap-4 mt-6">
+                <button id="prev" class="cursor-pointer bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-lg font-medium transition-colors duration-200">
+                    Previous
+                </button>
+                <button id="next" style="background-color:grey" disabled="true" class="cursor-pointer flex-1 px-8 py-3 rounded-lg font-medium text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Next
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,101 @@
+<div class="container mx-auto flex items-center justify-center">
+    <div class="relative">
+        <form style="width:500px"
+            class="bg-white flex flex-col gap-2 rounded-2xl p-6 shadow-2xl border border-gray-100">
+            <div class="text-center">
+                <h2 class="text-3xl font-light text-gray-900 tracking-tight">Accommodation Details</h2>
+                <p class="text-sm text-gray-500 mt-2">Please provide the following information</p>
+            </div>
+
+            <div class="flex flex-col gap-0.5">
+                <label for="name" class="text-sm font-bold text-gray-700">Property Name <span
+                        class="text-red-500">*</span></label>
+                <input required title="Name must be 4-128 characters and contain only letters" type="text" name="name"
+                    pattern="^[A-Za-z\s]{4,128}$" placeholder="Enter property name"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400" />
+                <p class="error text-sm text-red-600" data-error="name"></p>
+            </div>
+
+            <div class="flex flex-col gap-0.5">
+                <label for="address" class="text-sm font-bold text-gray-700">Address <span
+                        class="text-red-500">*</span></label>
+                <input required title="Length between 4 and 128 characters." type="text" name="address" minlength="4"
+                    maxlength="128" placeholder="Property address"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400" />
+                <p class="error text-sm text-red-600" data-error="address"></p>
+            </div>
+
+            <div class="flex flex-col gap-0.5">
+                <label for="type" class="text-sm font-bold text-gray-700">Property Type <span
+                        class="text-red-500">*</span></label>
+                <select name="type" required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 cursor-pointer">
+                    <option value=''>Select accommodation type</option>
+                    <option value='apartment'>Apartment</option>
+                    <option value='house'>House</option>
+                    <option value='villa'>Villa</option>
+                </select>
+                <p class="error text-sm text-red-600" data-error="type"></p>
+            </div>
+            <div class="flex items-center justify-center">
+                <button id="showOptions" class="w-12 h-12 items-center justify-center 
+                            rounded-full bg-green-500 text-white 
+                            text-2xl font-bold shadow-md 
+                            hover:bg-green-600 transition" style="display:flex">
+                    +
+                </button>
+
+                <button id="closeOptions" class="w-12 h-12 items-center justify-center 
+                            rounded-full bg-red-500 text-white 
+                            text-2xl font-bold shadow-md 
+                            hover:bg-red-600 transition" style="display:none">
+
+                    -
+                </button>
+            </div>
+            <div id="options" class="flex flex-col gap-2" style="display:none">
+                <div class="flex flex-col gap-0.5">
+                    <label for="description" class="text-sm font-bold text-gray-700">Description</label>
+                    <textarea name="description" placeholder="Property description (optional)" minlength="128"
+                        maxlength="2048" rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 placeholder-gray-400 resize-none"></textarea>
+                    <p class="error text-sm text-red-600" data-error="description"></p>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-bold text-gray-700">Photos</label>
+                    <div class="flex flex-col gap-3 mb-2">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="relative">
+                                <div id="photo_1"
+                                    class="w-full h-32 rounded-lg flex items-center justify-center bg-gray-50 border-2 border-gray-300">
+                                    <span class="text-gray-500 text-sm font-medium">Upload Photo 1</span>
+                                </div>
+                                <button id="remove_1" style="display:none"
+                                    class="cursor-pointer absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs transition-colors duration-200">X</button>
+                            </div>
+                            <div class="relative">
+                                <div id="photo_2"
+                                    class="w-full h-32 rounded-lg flex items-center justify-center bg-gray-50 border-2 border-gray-300">
+                                    <span class="text-gray-500 text-sm font-medium">Upload Photo 2</span>
+                                </div>
+                                <button id="remove_2" style="display:none"
+                                    class="cursor-pointer absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs transition-colors duration-200">X</button>
+                            </div>
+                        </div>
+                        <button id="add_photo"
+                            class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors duration-200">
+                            Add Photo
+                        </button>
+                        <input id="file" type="file" style="display:none">
+                    </div>
+                    <p class="error text-sm text-red-600" data-error="photo"></p>
+                </div>
+            </div>
+            <button id="next" style="background-color:grey" disabled=true
+                class="w-full mt-4 px-8 cursor-pointer py-3 rounded-lg font-medium text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                Next
+            </button>
+        </form>
+    </div>
+</div>

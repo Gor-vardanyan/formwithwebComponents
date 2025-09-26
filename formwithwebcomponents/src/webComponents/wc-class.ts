@@ -1,5 +1,6 @@
 import type { Acomodation, Owner } from "../App";
 import tailwindcss from '../App.css?inline'
+import { base64ToFile } from "./components/utils";
 
 export type Overview = { 'acomodation': Acomodation, 'owner': Owner };
 type ComponentName = 'acomodation' | 'owner' | 'overview';
@@ -28,24 +29,22 @@ export class WcClass extends HTMLElement {
      * @param wcName - initialize with the name ("accommodation" | "owner" | "overview")
      */
 
-    connectedCallback() {
-
-    }
-
     constructor(wcName: ComponentName) {
         super();
         this.name = wcName;
-        const inner = this.inner
-        this.connectedCallback = new Proxy(this.connectedCallback, {
-            apply(target, thisArg, args) {
-                const style = document.createElement('style');
-                style.textContent += tailwindcss;
-                inner.appendChild(style);
-                const result = Reflect.apply(target, thisArg, args);
-                return result;
-            },
-        });
     };
+
+    injectTailwind() {
+        if ("adoptedStyleSheets" in Document.prototype) {
+            const sheet = new CSSStyleSheet();
+            sheet.replaceSync(tailwindcss);
+            this.inner.adoptedStyleSheets = [...this.inner.adoptedStyleSheets, sheet];
+        } else {
+            const style = document.createElement("style");
+            style.textContent = tailwindcss;
+            this.inner.appendChild(style);
+        }
+    }
 
     validateInput(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
         const errorField = this.inner.querySelector<HTMLParagraphElement>(`.error[data-error="${el.name}"]`);
@@ -91,6 +90,50 @@ export class WcClass extends HTMLElement {
         }
     }
 
+    renderPhotos = ({
+        photo1,
+        removePhoto1,
+        photo2,
+        removePhoto2,
+        addPhoto,
+        photos
+    }: {
+        photo1: HTMLDivElement,
+        removePhoto1: HTMLButtonElement,
+        photo2: HTMLDivElement,
+        removePhoto2: HTMLButtonElement,
+        addPhoto: HTMLButtonElement,
+        photos: File[];
+    }) => {
+        if (photo1) photo1.innerHTML = "";
+        if (photo2) photo2.innerHTML = "";
+
+        if (photos[0] && photo1 && removePhoto1) {
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(photos[0]);
+            img.width = 100;
+            img.height = 100;
+            img.style.objectFit = "cover";
+            photo1.appendChild(img);
+            removePhoto1.style.display = "inline-block";
+        } else if (removePhoto1) {
+            removePhoto1.style.display = "none";
+        }
+
+        if (photos[1] && photo2 && removePhoto2) {
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(photos[1]);
+            img.width = 100;
+            img.height = 100;
+            img.style.objectFit = "cover";
+            photo2.appendChild(img);
+            removePhoto2.style.display = "inline-block";
+        } else if (removePhoto2) {
+            removePhoto2.style.display = "none";
+        }
+        this.toggleButtonDisable(addPhoto, !(photos.length >= 2));
+    };
+
     validateForm() {
         const form = this.inner.querySelector<HTMLFormElement>('form')
         if (form) {
@@ -105,7 +148,7 @@ export class WcClass extends HTMLElement {
      * 
      * @param newValue - A record of key/value pairs to update in `formData`.
      */
-    updateForm(newValue: Record<string, string | (File | FileList)[]>) {
+    updateForm(newValue: Record<string, string | string[]>) {
         this.formData = {
             ...this.formData,
             ...newValue
@@ -153,6 +196,7 @@ export class WcClass extends HTMLElement {
             Object.keys(value).length &&
             name === 'data'
         ) {
+            this.formData = value;
             setTimeout(() => {
                 const inputs = this.inner.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select');
                 inputs.forEach((el) => {
@@ -161,6 +205,23 @@ export class WcClass extends HTMLElement {
                         el.value = value[name];
                     }
                 });
+                if (this.name === 'acomodation' && value.photos.length) {
+                    const photo1 = this.inner.querySelector<HTMLDivElement>('#photo_1') as HTMLDivElement;
+                    const photo2 = this.inner.querySelector<HTMLDivElement>('#photo_2') as HTMLDivElement;
+                    const removePhoto1 = this.inner.querySelector<HTMLButtonElement>('#remove_1') as HTMLButtonElement;
+                    const removePhoto2 = this.inner.querySelector<HTMLButtonElement>('#remove_2') as HTMLButtonElement;
+                    const addPhoto = this.inner.querySelector<HTMLButtonElement>('#add_photo') as HTMLButtonElement;
+
+                    this.renderPhotos({
+                        photo1,
+                        removePhoto1,
+                        photo2,
+                        removePhoto2,
+                        addPhoto,
+                        photos: value.photos
+                            .map((basePhoto: string) => base64ToFile(basePhoto))
+                    });
+                }
                 this.validateForm();
             }, 500)
         }

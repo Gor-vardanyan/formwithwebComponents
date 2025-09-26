@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import './App.css'
+import Congratulations from './Components/Congratulations';
 
 export type Acomodation = {
   name: string;
   address: string;
   type: 'apartment' | 'house' | 'villa';
   description?: string;
-  photos?: File[];
+  photos?: string[];
 }
 
 export type Owner = {
@@ -51,18 +52,22 @@ function App() {
       case 2: {
         return <wc-overview
           data={JSON.stringify(formData)}
+          onChange={(e: any) => handleStepChange(e.nativeEvent as CustomEvent)}
         />
       }
+      case 3: {
+        return <Congratulations owner={formData.owner?.name}/>
+      }
       default:
+        const data = JSON.stringify(formData.acomodation)
         return <wc-acomodation
-          data={JSON.stringify(formData.acomodation)}
+          data={data}
           onChange={(e: any) => handleStepChange(e.nativeEvent as CustomEvent)}
         />
     }
   }
   return (
-    <div className='bg-amber-100 rounded-2xl'>
-      Form & Web Components
+    <div className='rounded-2xl'>
       {renderBySteps()}
     </div>
   )
