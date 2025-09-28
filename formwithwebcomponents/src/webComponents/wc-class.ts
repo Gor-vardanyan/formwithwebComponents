@@ -4,19 +4,22 @@ import { base64ToFile } from "./components/utils";
 
 export type Overview = { 'acomodation': Acomodation, 'owner': Owner };
 type ComponentName = 'acomodation' | 'owner' | 'overview';
+type RenderPhotos = {
+    addPhoto: HTMLButtonElement;
+    photos: File[];
+}
 
 /**
- * Web Component base class for multi-step forms (e.g. Accommodation, Owner).
- * 
- * This class provides:
- * - Shadow DOM (`inner`)
- * - Local form data (`formData`)
- * - Form validation (`validateForm`)
- * - Data updates (`updateForm`)
- * - Step navigation events (`emitStepChange`)
- * - Attribute observation (`attributeChangedCallback`)
- * 
- * @template ComponentName - The specific component name ("accommodation" | "owner"")
+ * Web Component base class for multi-step forms (e.g. Accommodation, Owner, Overview).
+ *
+ * Features:
+ * - Shadow DOM encapsulation (`inner`)
+ * - Local form state management (`formData`)
+ * - Form validation (`validateForm`, `validateInput`)
+ * - Automatic error display
+ * - File upload and rendering (`renderPhotos`)
+ * - TailwindCSS injection (`injectTailwind`)
+ * - Navigation events for React integration (`emitStepChange`)
  */
 export class WcClass extends HTMLElement {
     name: ComponentName = 'acomodation';
@@ -26,14 +29,18 @@ export class WcClass extends HTMLElement {
 
     /**
      * Creates an instance of the Web Component.
-     * @param wcName - initialize with the name ("accommodation" | "owner" | "overview")
+     * @param wcName - Initialize with the component name.
      */
-
     constructor(wcName: ComponentName) {
         super();
         this.name = wcName;
     };
 
+    /**
+     * Inject TailwindCSS styles into the Shadow DOM.
+     * 
+     * Uses `adoptedStyleSheets` if available, otherwise falls back to a `<style>` tag.
+     */
     injectTailwind() {
         if ("adoptedStyleSheets" in Document.prototype) {
             const sheet = new CSSStyleSheet();
@@ -46,6 +53,12 @@ export class WcClass extends HTMLElement {
         }
     }
 
+    /**
+     * Validate a single form field and update its error message.
+     * 
+     * @param el - The input, textarea, or select element to validate.
+     * @returns {boolean} `true` if valid, `false` otherwise.
+     */
     validateInput(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement) {
         const errorField = this.inner.querySelector<HTMLParagraphElement>(`.error[data-error="${el.name}"]`);
         let localValidation = false;
@@ -63,12 +76,8 @@ export class WcClass extends HTMLElement {
     }
 
     /**
-     * Validate all input, textarea, and select elements inside the shadow DOM.
-     * 
-     * Uses native HTML5 validation (`checkValidity`).
-     * Displays validation messages inside matching `.error[data-error="fieldName"]` elements.
-     * 
-     * @returns {boolean} `true` if all fields are valid, otherwise `false`.
+     * Attach blur listeners to all inputs in the Shadow DOM.
+     * When an input loses focus, it will be validated immediately.
      */
     setInputBlurListener() {
         const inputs = this.inner.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select');
@@ -80,6 +89,12 @@ export class WcClass extends HTMLElement {
         });
     }
 
+    /**
+     * Enable or disable a button and apply visual feedback.
+     * 
+     * @param button - The button to update.
+     * @param allow - `true` to enable (blue), `false` to disable (gray).
+     */
     toggleButtonDisable(button: HTMLButtonElement, allow: boolean) {
         if (allow) {
             button.disabled = false;
@@ -90,50 +105,44 @@ export class WcClass extends HTMLElement {
         }
     }
 
-    renderPhotos = ({
-        photo1,
-        removePhoto1,
-        photo2,
-        removePhoto2,
-        addPhoto,
-        photos
-    }: {
-        photo1: HTMLDivElement,
-        removePhoto1: HTMLButtonElement,
-        photo2: HTMLDivElement,
-        removePhoto2: HTMLButtonElement,
-        addPhoto: HTMLButtonElement,
-        photos: File[];
-    }) => {
-        if (photo1) photo1.innerHTML = "";
-        if (photo2) photo2.innerHTML = "";
+    /**
+     * Render photo previews into the two slots with their corresponding remove buttons.
+     * Always resets slots before rendering.
+     */
+    renderPhotos = ({ addPhoto, photos }: RenderPhotos) => {
+        const photoSlots = Array.from(this.inner.querySelectorAll<HTMLDivElement>('[id^="photo_"]'));
+        const removeBtns = Array.from(this.inner.querySelectorAll<HTMLButtonElement>('[id^="remove_"]'));
 
-        if (photos[0] && photo1 && removePhoto1) {
-            const img = document.createElement("img");
-            img.src = URL.createObjectURL(photos[0]);
-            img.width = 100;
-            img.height = 100;
-            img.style.objectFit = "cover";
-            photo1.appendChild(img);
-            removePhoto1.style.display = "inline-block";
-        } else if (removePhoto1) {
-            removePhoto1.style.display = "none";
-        }
+        photoSlots.forEach((slot, index) => {
+            const file = photos[index];
+            const removeBtn = removeBtns[index];
+            slot.innerHTML = "";
 
-        if (photos[1] && photo2 && removePhoto2) {
-            const img = document.createElement("img");
-            img.src = URL.createObjectURL(photos[1]);
-            img.width = 100;
-            img.height = 100;
-            img.style.objectFit = "cover";
-            photo2.appendChild(img);
-            removePhoto2.style.display = "inline-block";
-        } else if (removePhoto2) {
-            removePhoto2.style.display = "none";
-        }
-        this.toggleButtonDisable(addPhoto, !(photos.length >= 2));
+            if (file) {
+                const img = document.createElement("img");
+                img.src = URL.createObjectURL(file);
+                img.width = 100;
+                img.height = 100;
+                img.style.objectFit = "cover";
+                slot.appendChild(img);
+                if (removeBtn) {
+                    removeBtn.style.display = "inline-block";
+                }
+            } else {
+                if (removeBtn) {
+                    removeBtn.style.display = "none";
+                }
+            }
+        });
+        this.toggleButtonDisable(addPhoto, photos.length < photoSlots.length);
     };
 
+
+    /**
+     * Validate the entire form using HTML5 validity API.
+     * 
+     * Updates `isValid` and enables/disables the "Next" button accordingly.
+     */
     validateForm() {
         const form = this.inner.querySelector<HTMLFormElement>('form')
         if (form) {
@@ -180,9 +189,14 @@ export class WcClass extends HTMLElement {
     /**
      * Lifecycle callback: triggered when an observed attribute changes.
      * 
+     * Special handling for `"data"` attribute:
+     * - Populates form fields with provided values.
+     * - Re-renders photos (converts Base64 strings back to `File` objects).
+     * - Re-validates form.
+     * 
      * @param name - The name of the changed attribute.
      * @param oldValue - The previous attribute value.
-     * @param newValue - The new attribute value (typed as Acomodation | Owner).
+     * @param newValue - The new attribute value (JSON string).
      */
     attributeChangedCallback(
         name: string,
@@ -206,20 +220,10 @@ export class WcClass extends HTMLElement {
                     }
                 });
                 if (this.name === 'acomodation' && value.photos.length) {
-                    const photo1 = this.inner.querySelector<HTMLDivElement>('#photo_1') as HTMLDivElement;
-                    const photo2 = this.inner.querySelector<HTMLDivElement>('#photo_2') as HTMLDivElement;
-                    const removePhoto1 = this.inner.querySelector<HTMLButtonElement>('#remove_1') as HTMLButtonElement;
-                    const removePhoto2 = this.inner.querySelector<HTMLButtonElement>('#remove_2') as HTMLButtonElement;
                     const addPhoto = this.inner.querySelector<HTMLButtonElement>('#add_photo') as HTMLButtonElement;
-
                     this.renderPhotos({
-                        photo1,
-                        removePhoto1,
-                        photo2,
-                        removePhoto2,
                         addPhoto,
-                        photos: value.photos
-                            .map((basePhoto: string) => base64ToFile(basePhoto))
+                        photos: value.photos.map((basePhoto: string) => base64ToFile(basePhoto))
                     });
                 }
                 this.validateForm();

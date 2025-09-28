@@ -38,9 +38,6 @@ export class WcAcomodation extends WcClass {
         const type = this.inner.querySelector<HTMLInputElement>('select[name="type"]') as HTMLInputElement;
         const uploadPhotoInput = this.inner.querySelector<HTMLInputElement>('#file') as HTMLInputElement;
 
-        const photo1 = this.inner.querySelector<HTMLDivElement>('#photo_1') as HTMLDivElement;
-        const photo2 = this.inner.querySelector<HTMLDivElement>('#photo_2') as HTMLDivElement;
-
         const removePhoto1 = this.inner.querySelector('#remove_1') as HTMLButtonElement;
         const removePhoto2 = this.inner.querySelector('#remove_2') as HTMLButtonElement;
         const addPhoto = this.inner.querySelector('#add_photo') as HTMLButtonElement;
@@ -90,10 +87,6 @@ export class WcAcomodation extends WcClass {
                 });
 
                 this.renderPhotos({
-                    photo1,
-                    removePhoto1,
-                    photo2,
-                    removePhoto2,
                     addPhoto,
                     photos: files as File[]
                 });
@@ -116,10 +109,6 @@ export class WcAcomodation extends WcClass {
                 const updated = data.photos.slice(1);
                 this.updateForm({ photos: updated });
                 this.renderPhotos({
-                    photo1,
-                    removePhoto1,
-                    photo2,
-                    removePhoto2,
                     addPhoto,
                     photos: updated.map((basePhoto: string) => base64ToFile(basePhoto))
                 });
@@ -133,10 +122,6 @@ export class WcAcomodation extends WcClass {
                 const updated = [data.photos[0]];
                 this.updateForm({ photos: updated });
                 this.renderPhotos({
-                    photo1,
-                    removePhoto1,
-                    photo2,
-                    removePhoto2,
                     addPhoto,
                     photos: updated.map((basePhoto: string) => base64ToFile(basePhoto))
                 });
