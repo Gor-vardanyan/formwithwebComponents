@@ -1,6 +1,6 @@
-import type { Acomodation, Owner } from "../App";
+import type { Acomodation, Owner } from '../App';
 import tailwindcss from '../App.css?inline'
-import { base64ToFile } from "./components/utils";
+import { base64ToFile } from './components/utils';
 
 export type Overview = { 'acomodation': Acomodation, 'owner': Owner };
 type ComponentName = 'acomodation' | 'owner' | 'overview';
@@ -42,12 +42,12 @@ export class WcClass extends HTMLElement {
      * Uses `adoptedStyleSheets` if available, otherwise falls back to a `<style>` tag.
      */
     injectTailwind() {
-        if ("adoptedStyleSheets" in Document.prototype) {
+        if ('adoptedStyleSheets' in Document.prototype) {
             const sheet = new CSSStyleSheet();
             sheet.replaceSync(tailwindcss);
             this.inner.adoptedStyleSheets = [...this.inner.adoptedStyleSheets, sheet];
         } else {
-            const style = document.createElement("style");
+            const style = document.createElement('style');
             style.textContent = tailwindcss;
             this.inner.appendChild(style);
         }
@@ -65,7 +65,7 @@ export class WcClass extends HTMLElement {
         if (el.checkValidity()) {
             localValidation = true;
             if (errorField) {
-                errorField.textContent = "";
+                errorField.textContent = '';
             }
         } else {
             if (errorField) {
@@ -74,20 +74,20 @@ export class WcClass extends HTMLElement {
         }
         return localValidation
     }
-
     /**
      * Attach blur listeners to all inputs in the Shadow DOM.
      * When an input loses focus, it will be validated immediately.
-     */
+    */
     setInputBlurListener() {
         const inputs = this.inner.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select');
         inputs.forEach((el) => {
             el.addEventListener('blur', () => {
-                this.validateInput(el)
+                this.validateInput(el);
                 this.validateForm();
-            })
+            });
         });
     }
+
 
     /**
      * Enable or disable a button and apply visual feedback.
@@ -116,21 +116,21 @@ export class WcClass extends HTMLElement {
         photoSlots.forEach((slot, index) => {
             const file = photos[index];
             const removeBtn = removeBtns[index];
-            slot.innerHTML = "";
+            slot.innerHTML = '';
 
             if (file) {
-                const img = document.createElement("img");
+                const img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
                 img.width = 100;
                 img.height = 100;
-                img.style.objectFit = "cover";
+                img.style.objectFit = 'cover';
                 slot.appendChild(img);
                 if (removeBtn) {
-                    removeBtn.style.display = "inline-block";
+                    removeBtn.style.display = 'inline-block';
                 }
             } else {
                 if (removeBtn) {
-                    removeBtn.style.display = "none";
+                    removeBtn.style.display = 'none';
                 }
             }
         });
@@ -141,7 +141,7 @@ export class WcClass extends HTMLElement {
     /**
      * Validate the entire form using HTML5 validity API.
      * 
-     * Updates `isValid` and enables/disables the "Next" button accordingly.
+     * Updates `isValid` and enables/disables the 'Next' button accordingly.
      */
     validateForm() {
         const form = this.inner.querySelector<HTMLFormElement>('form')
@@ -168,10 +168,10 @@ export class WcClass extends HTMLElement {
      * Emit a step-change event to the parent React app or consumer.
      * 
      * The event contains:
-     * - `direction`: either "next" or "previous"
+     * - `direction`: either 'next' or 'previous'
      * - The form data associated with the current step
      * 
-     * @param direction - The navigation direction ("next" | "previous").
+     * @param direction - The navigation direction ('next' | 'previous').
      * @param paramName - The logical component name, used as the key in the event detail.
      */
     emitStepChange(
